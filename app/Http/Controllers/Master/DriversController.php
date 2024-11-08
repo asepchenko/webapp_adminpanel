@@ -1,0 +1,70 @@
+<?php
+
+namespace App\Http\Controllers\Master;
+
+use DataTables;
+use Illuminate\Http\Request;
+use GuzzleHttp\Exception\GuzzleException;
+use GuzzleHttp\Client;
+use App\Helpers\GuzzleHelper;
+use App\Http\Controllers\Controller;
+
+use Illuminate\Support\Facades\Http;
+
+class DriversController extends Controller
+{
+    public function index(Request $request)
+    {
+        abort_unless(\Gate::allows('master_driver_access'), 403);
+        $api_url = config('api.api_url')."/banks";
+        $response = GuzzleHelper::get($request, $api_url);
+        $banks = $response->data;
+        return view('master.drivers.index',compact('banks'));
+    }
+
+    public function history($id)
+    {
+        return view('master.drivers.history');
+    }
+    
+    public function datatable(Request $request)
+    {
+        abort_unless(\Gate::allows('master_driver_access'), 403);
+        $api_url = config('api.api_url')."/drivers";
+        $response = GuzzleHelper::get($request, $api_url);
+        $data = $response->data;
+        return DataTables::of($data)->make(true);
+    }
+
+    public function store(Request $request)
+    {
+        abort_unless(\Gate::allows('master_driver_create'), 403);
+        $api_url = config('api.api_url')."/drivers";
+        $response = GuzzleHelper::post($request, $api_url);
+        return $response;
+    }
+
+    public function show(Request $request, $id)
+    {
+        abort_unless(\Gate::allows('master_driver_access'), 403);
+        $api_url = config('api.api_url')."/drivers/".$id;
+        $response = GuzzleHelper::get($request, $api_url);
+        return response()->json($response->data);
+    }
+
+    public function update(Request $request)
+    {
+        abort_unless(\Gate::allows('master_driver_update'), 403);
+        $api_url = config('api.api_url')."/drivers/".$request->id;
+        $response = GuzzleHelper::put($request, $api_url);
+        return $response;
+    }
+
+    public function delete(Request $request)
+    {
+        abort_unless(\Gate::allows('master_driver_delete'), 403);
+        $api_url = config('api.api_url')."/drivers/".$request->id;
+        $response = GuzzleHelper::del($request, $api_url);
+        return $response;
+    }
+}
